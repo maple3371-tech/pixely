@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIXELY ★ 아카이브</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&family=Silkscreen:wght@400;700&family=Gothic+A1:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky-1:#d8f2ff;      /* 가장 밝은 하늘 */
+  --sky-2:#afe3ff;      /* 밝은 하늘 */
+  --sky-3:#7cc9f5;      /* 중간 하늘 */
+  --sky-4:#4aa8e8;      /* 진한 하늘 */
+  --sky-deep:#2f7fc4;   /* 딥 블루 */
+  --cloud:#ffffff;
+  --ink:#204a6b;        /* 텍스트 진파랑 */
+  --ink-soft:#5b83a3;
+  --lilac:#c9b8ff;      /* Y2K 라일락 포인트 */
+  --bubble:#ff9ed8;     /* 핑크 포인트 */
+  --lemon:#fff2a8;      /* 옐로 포인트 */
+  --mint:#b8ffe3;
+  --shadow:#8fc4ec;
+  --panel-border:#2f7fc4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Gothic A1',sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 15% 12%, rgba(255,255,255,.9) 0 6px, transparent 7px),
+    radial-gradient(circle at 82% 20%, rgba(255,255,255,.85) 0 9px, transparent 10px),
+    radial-gradient(circle at 68% 78%, rgba(255,255,255,.8) 0 5px, transparent 6px),
+    radial-gradient(circle at 30% 88%, rgba(255,255,255,.85) 0 7px, transparent 8px),
+    linear-gradient(160deg,var(--sky-2) 0%,var(--sky-1) 40%,#eafaff 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+/* 떠다니는 구름 배경 */
+.clouds{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.cloud{position:absolute;font-size:44px;opacity:.55;animation:drift linear infinite}
+@keyframes drift{from{transform:translateX(-15vw)}to{transform:translateX(115vw)}}
+@media (prefers-reduced-motion:reduce){.cloud{animation:none}}
+
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:22px 18px 80px}
+
+/* ===== 헤더 ===== */
+header.top{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  flex-wrap:wrap;margin-bottom:18px;
+}
+.logo{display:flex;align-items:baseline;gap:10px}
+.logo .star{font-family:'Silkscreen';color:var(--bubble);font-size:22px;
+  text-shadow:2px 2px 0 var(--cloud);animation:spin 6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.logo .star{animation:none}}
+.logo h1{
+  font-family:'Jua';font-size:40px;letter-spacing:1px;line-height:1;
+  color:var(--cloud);
+  text-shadow:
+    3px 3px 0 var(--sky-4),
+    4px 4px 0 var(--sky-deep),
+    0 0 18px rgba(255,255,255,.6);
+}
+.logo .sub{font-family:'Silkscreen';font-size:10px;color:var(--sky-deep);letter-spacing:2px}
+
+.auth{display:flex;align-items:center;gap:10px}
+.pill-btn{
+  font-family:'Jua';font-size:14px;cursor:pointer;
+  border:2.5px solid var(--panel-border);
+  background:linear-gradient(180deg,#fff,var(--sky-1));
+  color:var(--ink);padding:9px 16px;border-radius:22px;
+  box-shadow:3px 3px 0 var(--shadow);transition:transform .08s,box-shadow .08s;
+  display:inline-flex;align-items:center;gap:7px;
+}
+.pill-btn:hover{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--shadow)}
+.pill-btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--shadow)}
+.pill-btn.primary{background:linear-gradient(180deg,var(--bubble),#ff7ec8);color:#fff;border-color:#d64fa0}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--cloud);
+  border:2.5px solid var(--panel-border);border-radius:22px;padding:4px 12px 4px 4px;
+  box-shadow:3px 3px 0 var(--shadow);font-family:'Gothic A1';font-weight:700;font-size:13px}
+.user-chip img{width:28px;height:28px;border-radius:50%;border:2px solid var(--sky-3)}
+
+/* ===== 패널 공통 ===== */
+.panel{
+  background:var(--cloud);
+  border:3px solid var(--panel-border);
+  border-radius:20px;
+  box-shadow:5px 5px 0 var(--shadow);
+  padding:16px 18px;margin-bottom:18px;
+}
+.panel h2{font-family:'Jua';font-size:19px;color:var(--sky-deep);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px}
+.panel h2 .deco{font-family:'Silkscreen';font-size:13px;color:var(--bubble)}
+
+/* ===== 링크 추가 폼 ===== */
+.addbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:800;color:var(--ink-soft);letter-spacing:.5px}
+input[type=text],input[type=url],input[type=date],select{
+  font-family:'Gothic A1';font-size:14px;color:var(--ink);
+  border:2.5px solid var(--sky-3);border-radius:12px;padding:8px 11px;
+  background:#f4fbff;outline:none;transition:border-color .12s,box-shadow .12s;
+}
+input:focus,select:focus{border-color:var(--sky-4);box-shadow:0 0 0 3px rgba(124,201,245,.4)}
+.grow{flex:1;min-width:200px}
+.addbar .field.grow input{width:100%}
+
+/* 폼 안 태그 선택 영역 */
+.tagpick-wrap{margin-top:14px;display:none}
+.tagpick-wrap.show{display:block}
+.tagpick-group{margin-bottom:10px}
+.tagpick-group .gl{font-size:11px;font-weight:800;color:var(--ink-soft);
+  letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.tagpick{display:flex;flex-wrap:wrap;gap:7px}
+
+/* ===== 태그 칩 ===== */
+.tag{
+  font-family:'Gothic A1';font-weight:700;font-size:12.5px;
+  border:2px solid;border-radius:16px;padding:4px 11px;cursor:pointer;
+  transition:transform .07s,filter .1s;user-select:none;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:5px;line-height:1.3;
+}
+.tag:hover{transform:translateY(-1px);filter:brightness(1.04)}
+.tag.sel{box-shadow:0 0 0 3px rgba(255,255,255,.7),3px 3px 0 rgba(0,0,0,.12);
+  transform:translateY(-1px)}
+.tag .x{font-weight:800;opacity:.6;font-size:11px}
+.tag.locked{cursor:default;opacity:.92}
+
+/* 태그 색상 클래스 */
+.t-member{background:#eaf4ff;border-color:var(--sky-4);color:#1c5c96}
+.t-member.sel{background:var(--sky-4);color:#fff}
+.t-staff{background:#fff0fb;border-color:#e57bc4;color:#b83a8f}
+.t-staff.sel{background:#e57bc4;color:#fff}
+.t-guest{background:#fff8dd;border-color:#e6bf3a;color:#9a7400}
+.t-guest.sel{background:#e6bf3a;color:#5e4700}
+.t-combo{background:#efe8ff;border-color:var(--lilac);color:#6a4bd6;
+  border-style:dashed}
+.t-genre{background:#e2fff4;border-color:#4fd6a8;color:#1f8f68}
+.t-genre.sel{background:#4fd6a8;color:#fff}
+.t-series{background:#ffe9ec;border-color:#ff8ba0;color:#c33a55}
+.t-series.sel{background:#ff8ba0;color:#fff}
+
+.guest-team{font-size:10px;opacity:.7;font-weight:800;margin-left:2px}
+
+.addtag-inline{display:inline-flex;align-items:center;gap:4px}
+.addtag-inline input{padding:3px 8px;font-size:12px;width:110px;border-radius:14px}
+.mini-btn{font-family:'Jua';font-size:12px;cursor:pointer;border:2px solid var(--sky-4);
+  background:var(--sky-1);color:var(--ink);border-radius:14px;padding:3px 10px;
+  box-shadow:2px 2px 0 var(--shadow)}
+.mini-btn:active{transform:translate(2px,2px);box-shadow:0 0 0}
+
+/* ===== 검색/필터 ===== */
+.searchrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search-input{flex:1;min-width:220px;position:relative}
+.search-input input{width:100%;padding-left:34px}
+.search-input::before{content:"🔍";position:absolute;left:11px;top:50%;
+  transform:translateY(-50%);font-size:14px;pointer-events:none}
+.filter-note{font-size:11px;color:var(--ink-soft);font-weight:700}
+.active-filters{display:flex;flex-wrap:wrap;gap:7px;min-height:2px}
+.clear-filters{font-family:'Gothic A1';font-weight:800;font-size:11px;cursor:pointer;
+  background:none;border:none;color:var(--bubble);text-decoration:underline}
+
+/* 필터 가능한 전체 태그 목록 */
+.filter-cloud{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+.filter-cloud .fc-group{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.fc-label{font-family:'Silkscreen';font-size:9px;color:var(--sky-deep);
+  letter-spacing:1px;width:56px;flex-shrink:0}
+
+/* ===== 표 ===== */
+.table-scroll{overflow-x:auto;border-radius:16px}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:760px}
+thead th{
+  font-family:'Jua';font-size:14px;color:#fff;
+  background:linear-gradient(180deg,var(--sky-4),var(--sky-deep));
+  padding:11px 12px;text-align:left;position:sticky;top:0;
+  border-bottom:3px solid var(--panel-border);
+}
+thead th:first-child{border-top-left-radius:14px}
+thead th:last-child{border-top-right-radius:14px}
+tbody td{padding:10px 12px;border-bottom:2px dotted var(--sky-3);
+  vertical-align:top;font-size:13.5px}
+tbody tr{background:#fff}
+tbody tr:nth-child(even){background:#f2fbff}
+tbody tr:hover{background:#e6f6ff}
+.col-date{white-space:nowrap;font-weight:700;color:var(--sky-deep);font-size:12.5px}
+.col-title{font-weight:700;max-width:280px}
+.col-title a{color:var(--ink);text-decoration:none}
+.col-title a:hover{text-decoration:underline;color:var(--sky-deep)}
+.cell-tags{display:flex;flex-wrap:wrap;gap:5px}
+.cell-tags .tag{cursor:pointer;font-size:11.5px;padding:3px 9px}
+
+/* 썸네일 미리보기 */
+.thumb-cell{position:relative;width:130px}
+.thumb-cell a{display:block;position:relative}
+.thumb-cell img.tb{width:120px;height:68px;object-fit:cover;border-radius:9px;
+  border:2.5px solid var(--sky-3);box-shadow:2px 2px 0 var(--shadow);display:block}
+.thumb-cell .play{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:22px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6);
+  pointer-events:none;opacity:.85}
+.row-actions{display:flex;gap:6px;margin-top:6px}
+.row-actions button{font-size:10px;padding:2px 8px;border-radius:10px;cursor:pointer;
+  border:2px solid var(--sky-3);background:#fff;font-family:'Gothic A1';font-weight:700;
+  color:var(--ink-soft)}
+.row-actions button.del{border-color:#ffb3c4;color:#d6486a}
+
+.empty{text-align:center;padding:48px 20px;color:var(--ink-soft)}
+.empty .big{font-family:'Jua';font-size:22px;color:var(--sky-4);margin-bottom:8px}
+.empty .em{font-size:40px;margin-bottom:10px}
+
+/* 상태 배너 */
+.banner{border-radius:14px;padding:10px 14px;font-size:12.5px;font-weight:700;
+  margin-bottom:14px;display:flex;gap:8px;align-items:center;line-height:1.5}
+.banner.warn{background:#fff6da;border:2.5px solid #e6bf3a;color:#8a6a00}
+.banner.info{background:#e3f4ff;border:2.5px solid var(--sky-3);color:var(--sky-deep)}
+.banner code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:5px;font-size:11px}
+
+.gate{text-align:center;padding:40px 20px}
+.gate .em{font-size:56px;margin-bottom:8px}
+.gate h2{font-family:'Jua';font-size:24px;color:var(--sky-deep);margin-bottom:8px}
+.gate p{color:var(--ink-soft);margin-bottom:20px;font-size:14px;line-height:1.6}
+
+.count-chip{font-family:'Silkscreen';font-size:10px;color:#fff;background:var(--bubble);
+  padding:3px 9px;border-radius:12px;margin-left:auto}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);
+  background:var(--ink);color:#fff;padding:11px 20px;border-radius:20px;font-weight:700;
+  font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:99;transition:transform .3s;
+  border:2px solid var(--sky-3)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+footer{text-align:center;font-family:'Silkscreen';font-size:10px;color:var(--sky-deep);
+  opacity:.7;margin-top:30px;letter-spacing:1px}
+
+@media (max-width:640px){
+  .logo h1{font-size:30px}
+  .field.grow{min-width:100%}
+  .panel{padding:13px}
+}
+</style>
+</head>
+<body>
+<div class="clouds" id="clouds"></div>
+<div class="wrap">
+
+  <header class="top">
+    <div class="logo">
+      <span class="star">✦</span>
+      <div>
+        <h1>PIXELY</h1>
+        <div class="sub">★ VIDEO ARCHIVE ★</div>
+      </div>
+    </div>
+    <div class="auth" id="authArea">
+      <!-- 로그인 상태에 따라 JS가 채움 -->
+    </div>
+  </header>
+
+  <!-- 설정 안내 배너 (Firebase/YouTube 키 미설정 시) -->
+  <div id="setupBanner"></div>
+
+  <!-- 로그인 게이트 -->
+  <div id="gate" class="panel gate" style="display:none">
+    <div class="em">☁️🔑</div>
+    <h2>로그인하고 아카이브 시작하기</h2>
+    <p>구글 로그인을 하면 어느 기기에서든<br>똑같은 아카이브를 볼 수 있어요.</p>
+    <button class="pill-btn primary" id="gateLogin">🌸 구글로 로그인</button>
+  </div>
+
+  <!-- 메인 앱 -->
+  <div id="app" style="display:none">
+
+    <!-- 추가 패널 -->
+    <section class="panel">
+      <h2>영상 추가하기 <span class="deco">+ NEW</span></h2>
+      <div class="addbar">
+        <div class="field grow">
+          <label for="urlInput">유튜브 링크 (붙여넣으면 제목·날짜·썸네일 자동!)</label>
+          <input type="url" id="urlInput" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+        <button class="pill-btn" id="fetchBtn">🪄 불러오기</button>
+      </div>
+
+      <!-- 자동/수동 메타 + 태그 선택 -->
+      <div class="tagpick-wrap" id="tagpickWrap">
+        <div class="addbar" style="margin-bottom:12px">
+          <div class="field">
+            <label>날짜</label>
+            <input type="date" id="metaDate">
+          </div>
+          <div class="field grow">
+            <label>제목</label>
+            <input type="text" id="metaTitle" placeholder="제목">
+          </div>
+        </div>
+
+        <div class="tagpick-group">
+          <div class="gl">👑 주요 멤버</div>
+          <div class="tagpick" id="pickMembers"></div>
+        </div>
+        <div class="tagpick-group">
+          <div class="gl">💼 직원
+            <span class="addtag-inline">
+              <input type="text" id="newStaff" placeholder="직원 추가">
+              <button class="mini-btn" data-add="staff">+</button>
+            </span>
+          </div>
+          <div class="tagpick" id="pickStaff"></div>
+        </div>
+        <div class="tagpick-group">
+          <div class="gl">🎀 게스트
+            <span class="addtag-inline">
+              <input type="text" id="newGuestName" placeholder="이름">
+              <input type="text" id="newGuestTeam" placeholder="소속(선택)" style="width:90px">
+              <button class="mini-btn" data-add="guest">+</button>
+            </span>
+          </div>
+          <div class="tapick" ></div>
+          <div class="tagpick" id="pickGuest"></div>
+        </div>
+        <div class="tagpick-group">
+          <div class="gl">✨ 조합 태그 <span style="font-weight:400;opacity:.7">(멤버 선택하면 자동으로 켜져요)</span></div>
+          <div class="tagpick" id="pickCombo"></div>
+        </div>
+        <div class="tagpick-group">
+          <div class="gl">🎮 장르
+            <span class="addtag-inline">
+              <input type="text" id="newGenre" placeholder="장르 추가">
+              <button class="mini-btn" data-add="genre">+</button>
+            </span>
+          </div>
+          <div class="tagpick" id="pickGenre"></div>
+        </div>
+        <div class="tagpick-group">
+          <div class="gl">📺 시리즈
+            <span class="addtag-inline">
+              <input type="text" id="newSeries" placeholder="시리즈 추가">
+              <button class="mini-btn" data-add="series">+</button>
+            </span>
+          </div>
+          <div class="tagpick" id="pickSeries"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="pill-btn primary" id="saveBtn">💾 저장하기</button>
+          <button class="pill-btn" id="cancelBtn">취소</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 검색 패널 -->
+    <section class="panel">
+      <h2>검색 &amp; 필터 <span class="deco">SEARCH</span></h2>
+      <div class="searchrow">
+        <div class="search-input">
+          <input type="text" id="searchBox" placeholder="제목으로 검색...">
+        </div>
+        <span class="filter-note">태그를 누르면 필터, 여러 개 누르면 모두 포함한 영상만 보여요</span>
+      </div>
+      <div class="active-filters" id="activeFilters"></div>
+      <div class="filter-cloud" id="filterCloud"></div>
+    </section>
+
+    <!-- 표 패널 -->
+    <section class="panel">
+      <h2>영상 목록 <span class="count-chip" id="countChip">0</span></h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:100px">날짜</th>
+              <th style="width:140px">영상</th>
+              <th>제목</th>
+              <th style="width:180px">출연진</th>
+              <th style="width:160px">장르·시리즈</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="emptyState" style="display:none">
+        <div class="em">☁️</div>
+        <div class="big">아직 영상이 없어요!</div>
+        <div>위에서 유튜브 링크를 붙여넣어 첫 영상을 추가해보세요.</div>
+      </div>
+    </section>
+  </div>
+
+  <footer>PIXELY ARCHIVE ✦ made with ☁ &amp; ★</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK (compat 버전 - 설정 간단) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+/* =========================================================================
+   ★ 설정값 - 여기 두 곳만 채우면 됩니다 ★
+   ========================================================================= */
+
+// (1) Firebase 설정 : 파이어베이스 콘솔 > 프로젝트 설정 > 내 앱(웹) 에서 복사
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyDmXYptWQFrybHQEMTK6055MiW9eJ0aUAQ",
+  authDomain:        "database-ab05f.firebaseapp.com",
+  projectId:         "database-ab05f",
+  storageBucket:     "database-ab05f.firebasestorage.app",
+  messagingSenderId: "815927125903",
+  appId:             "1:815927125903:web:2cd5844126c286b7570dfa",
+  measurementId:     "G-GZT0TFKJJR"
+};
+
+// (2) YouTube Data API v3 키 : 구글 클라우드 콘솔에서 발급 (무료)
+const YOUTUBE_API_KEY = "AIzaSyBxOG4w2K3zrtcPsNpaNauGuvhcB7Cw_bw";
+
+/* ========================================================================= */
+
+// 설정이 채워졌는지 확인
+const FB_READY = !FIREBASE_CONFIG.apiKey.startsWith("여기에");
+const YT_READY = !YOUTUBE_API_KEY.startsWith("여기에");
+
+/* ---------- 기본 데이터 (사용자가 준 값) ---------- */
+const DEFAULT_MEMBERS = ["라더","덕개","각별","공룡","잠뜰","수현"];
+const DEFAULT_STAFF   = ["티티","또니","필립","이신","우재"];
+// 게스트: {name, team}
+const DEFAULT_GUESTS  = [
+  {name:"해자",   team:"팀 시스"},
+  {name:"또복",   team:"팀 시스"},
+  {name:"태경",   team:"태쁘"},
+  {name:"쁘허",   team:"태쁘"},
+  {name:"마인애플",team:"팀 샐러드"},
+  {name:"카운터", team:"팀 샐러드"},
+  {name:"꾸몽",   team:"팀 샐러드"},
+  {name:"파크모", team:"팀 샐러드"},
+  {name:"유성",   team:"팀 샐러드"},
+  {name:"아이리스",team:"팀 샐러드"}
+];
+
+// 2인 조합 규칙 : name -> [멤버A, 멤버B]
+const COMBO_RULES = {
+  "라떡":["라더","덕개"], "괴짜":["라더","각별"], "이빨":["라더","공룡"],
+  "바":["라더","잠뜰"],   "황혼":["라더","수현"], "맏막":["덕개","각별"],
+  "부산":["덕개","공룡"], "저노":["덕개","잠뜰"], "무해":["덕개","수현"],
+  "공각":["각별","공룡"], "이과":["각별","잠뜰"], "원혐":["각별","수현"],
+  "주작":["공룡","잠뜰"], "오로라":["공룡","수현"],"잠컴":["잠뜰","수현"]
+};
+// 특수 조합 : 아래 인원 중 3명 이상 -> "부녀회"
+const BUNYEO_MEMBERS = ["또니","잠뜰","꾸몽","쁘허","해자"];
+const BUNYEO_NAME = "부녀회";
+const BUNYEO_MIN = 3;
+
+const DEFAULT_GENRES = ["술래잡기","종합게임"];
+const DEFAULT_SERIES = ["미스터리 수사반 시즌 1"];
+
+/* ---------- 앱 상태 ---------- */
+let state = {
+  videos: [],        // {id,url,videoId,date,title,people:[],genres:[],series:[]}
+  staff:  [...DEFAULT_STAFF],
+  guests: DEFAULT_GUESTS.map(g=>({...g})),
+  genres: [...DEFAULT_GENRES],
+  series: [...DEFAULT_SERIES]
+};
+let currentUser = null;
+let db = null;
+let userDocRef = null;
+
+// 폼에서 현재 선택된 태그들
+let formSel = { people:new Set(), genres:new Set(), series:new Set() };
+// 검색 필터
+let filterTags = new Set();
+let filterText = "";
+
+/* ---------- 유틸 ---------- */
+const $ = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2200);}
+function esc(s){return (s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+// 유튜브 videoId 추출
+function extractVideoId(url){
+  if(!url)return null;
+  const m = url.match(/(?:v=|\/embed\/|\.be\/|\/shorts\/|\/live\/)([\w-]{11})/);
+  if(m)return m[1];
+  const m2 = url.match(/^[\w-]{11}$/); // 순수 id
+  return m2?url:null;
+}
+function thumbUrl(vid){return `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;}
+
+// 게스트 이름->팀 조회
+function guestTeam(name){const g=state.guests.find(x=>x.name===name);return g?g.team:"";}
+function isMember(n){return DEFAULT_MEMBERS.includes(n);}
+function isStaff(n){return state.staff.includes(n);}
+function isGuest(n){return state.guests.some(g=>g.name===n);}
+
+/* 조합 태그 자동 계산 : 선택된 사람 Set -> 활성 조합 이름 배열 */
+function computeCombos(peopleSet){
+  const out=[];
+  for(const [name,pair] of Object.entries(COMBO_RULES)){
+    if(pair.every(p=>peopleSet.has(p))) out.push(name);
+  }
+  const bcount = BUNYEO_MEMBERS.filter(m=>peopleSet.has(m)).length;
+  if(bcount>=BUNYEO_MIN) out.push(BUNYEO_NAME);
+  return out;
+}
+
+/* =========================================================================
+   렌더링
+   ========================================================================= */
+
+// 배경 구름
+function initClouds(){
+  const c=$("#clouds");const emo=["☁️","☁","⛅"];
+  for(let i=0;i<6;i++){
+    const el=document.createElement("div");el.className="cloud";
+    el.textContent=emo[i%emo.length];
+    el.style.top=(Math.random()*80+2)+"%";
+    el.style.fontSize=(30+Math.random()*40)+"px";
+    el.style.animationDuration=(28+Math.random()*30)+"s";
+    el.style.animationDelay=(-Math.random()*30)+"s";
+    c.appendChild(el);
+  }
+}
+
+// 태그 칩 HTML
+function chip(label,cls,{selected,removable,team,locked}={}){
+  const sel=selected?" sel":"";const lk=locked?" locked":"";
+  const teamHtml=team?`<span class="guest-team">${esc(team)}</span>`:"";
+  const x=removable?`<span class="x" data-x="1">✕</span>`:"";
+  return `<span class="tag ${cls}${sel}${lk}" data-label="${esc(label)}">${esc(label)}${teamHtml}${x}</span>`;
+}
+
+// === 추가 폼의 태그 선택 영역 렌더 ===
+function renderPickers(){
+  // 멤버 (고정, 삭제 불가)
+  $("#pickMembers").innerHTML = DEFAULT_MEMBERS
+    .map(m=>chip(m,"t-member",{selected:formSel.people.has(m)})).join("");
+  // 직원 (추가/삭제 가능)
+  $("#pickStaff").innerHTML = state.staff
+    .map(s=>chip(s,"t-staff",{selected:formSel.people.has(s),removable:true})).join("");
+  // 게스트 (추가/삭제 가능, 팀 표시)
+  $("#pickGuest").innerHTML = state.guests
+    .map(g=>chip(g.name,"t-guest",{selected:formSel.people.has(g.name),removable:true,team:g.team})).join("");
+  // 조합 (자동, 클릭 불가 - 잠금 표시)
+  const combos=computeCombos(formSel.people);
+  $("#pickCombo").innerHTML = combos.length
+    ? combos.map(c=>chip(c,"t-combo",{selected:true,locked:true})).join("")
+    : `<span style="font-size:12px;color:var(--ink-soft)">멤버를 2명 이상 골라보세요 ✨</span>`;
+  // 장르
+  $("#pickGenre").innerHTML = state.genres
+    .map(g=>chip(g,"t-genre",{selected:formSel.genres.has(g),removable:true})).join("");
+  // 시리즈
+  $("#pickSeries").innerHTML = state.series
+    .map(s=>chip(s,"t-series",{selected:formSel.series.has(s),removable:true})).join("");
+}
+
+// 폼 태그 클릭 위임
+function wirePickerClicks(){
+  const map=[
+    ["#pickMembers","people"],["#pickStaff","people"],["#pickGuest","people"],
+    ["#pickGenre","genres"],["#pickSeries","series"]
+  ];
+  map.forEach(([sel,kind])=>{
+    $(sel).addEventListener("click",e=>{
+      const tag=e.target.closest(".tag");if(!tag)return;
+      const label=tag.dataset.label;
+      // ✕ 클릭 = 태그 삭제 (직원/게스트/장르/시리즈만)
+      if(e.target.dataset.x){
+        removeTagDefinition(sel,label);return;
+      }
+      // 토글 선택
+      const set=formSel[kind];
+      set.has(label)?set.delete(label):set.add(label);
+      renderPickers();
+    });
+  });
+}
+
+// 태그 '정의' 자체를 삭제
+function removeTagDefinition(sel,label){
+  if(sel==="#pickStaff"){state.staff=state.staff.filter(x=>x!==label);}
+  else if(sel==="#pickGuest"){state.guests=state.guests.filter(g=>g.name!==label);}
+  else if(sel==="#pickGenre"){state.genres=state.genres.filter(x=>x!==label);}
+  else if(sel==="#pickSeries"){state.series=state.series.filter(x=>x!==label);}
+  formSel.people.delete(label);formSel.genres.delete(label);formSel.series.delete(label);
+  renderPickers();renderFilterCloud();saveData();
+}
+
+// 태그 추가 버튼
+function wireAddTagButtons(){
+  $$(".mini-btn[data-add]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const kind=btn.dataset.add;
+      if(kind==="staff"){
+        const v=$("#newStaff").value.trim();if(!v)return;
+        if(!state.staff.includes(v)&&!isMember(v))state.staff.push(v);
+        $("#newStaff").value="";
+      }else if(kind==="guest"){
+        const n=$("#newGuestName").value.trim();if(!n)return;
+        const tm=$("#newGuestTeam").value.trim();
+        if(!state.guests.some(g=>g.name===n))state.guests.push({name:n,team:tm});
+        $("#newGuestName").value="";$("#newGuestTeam").value="";
+      }else if(kind==="genre"){
+        const v=$("#newGenre").value.trim();if(!v)return;
+        if(!state.genres.includes(v))state.genres.push(v);
+        $("#newGenre").value="";
+      }else if(kind==="series"){
+        const v=$("#newSeries").value.trim();if(!v)return;
+        if(!state.series.includes(v))state.series.push(v);
+        $("#newSeries").value="";
+      }
+      renderPickers();renderFilterCloud();saveData();toast("태그 추가 완료 ✨");
+    });
+  });
+}
+
+/* === 검색 필터 태그 구름 === */
+function renderFilterCloud(){
+  const groups=[
+    ["MEMBER",DEFAULT_MEMBERS.map(m=>[m,"t-member"])],
+    ["STAFF", state.staff.map(s=>[s,"t-staff"])],
+    ["GUEST", state.guests.map(g=>[g.name,"t-guest",g.team])],
+    ["COMBO", [...Object.keys(COMBO_RULES),BUNYEO_NAME].map(c=>[c,"t-combo"])],
+    ["GENRE", state.genres.map(g=>[g,"t-genre"])],
+    ["SERIES",state.series.map(s=>[s,"t-series"])]
+  ];
+  $("#filterCloud").innerHTML = groups.map(([lab,items])=>{
+    if(!items.length)return"";
+    const chips=items.map(([l,cls,team])=>
+      chip(l,cls,{selected:filterTags.has(l),team})).join("");
+    return `<div class="fc-group"><span class="fc-label">${lab}</span>${chips}</div>`;
+  }).join("");
+}
+function wireFilterClicks(){
+  $("#filterCloud").addEventListener("click",e=>{
+    const tag=e.target.closest(".tag");if(!tag)return;
+    const label=tag.dataset.label;
+    filterTags.has(label)?filterTags.delete(label):filterTags.add(label);
+    renderFilterCloud();renderActiveFilters();renderTable();
+  });
+}
+function renderActiveFilters(){
+  const box=$("#activeFilters");
+  if(!filterTags.size&&!filterText){box.innerHTML="";return;}
+  const chips=[...filterTags].map(l=>`<span class="tag t-combo sel" data-label="${esc(l)}">${esc(l)} <span class="x">✕</span></span>`).join("");
+  box.innerHTML = chips + (filterTags.size?`<button class="clear-filters" id="clearF">필터 모두 지우기</button>`:"");
+  box.querySelectorAll(".tag").forEach(t=>t.addEventListener("click",()=>{
+    filterTags.delete(t.dataset.label);renderFilterCloud();renderActiveFilters();renderTable();
+  }));
+  const cf=$("#clearF");if(cf)cf.addEventListener("click",()=>{
+    filterTags.clear();renderFilterCloud();renderActiveFilters();renderTable();});
+}
+
+/* === 표 렌더 === */
+function videoAllTags(v){
+  // 표시/검색용 전체 태그 = 사람 + 자동조합 + 장르 + 시리즈
+  const combos=computeCombos(new Set(v.people));
+  return {people:v.people, combos, genres:v.genres, series:v.series,
+          all:[...v.people,...combos,...v.genres,...v.series]};
+}
+function renderTable(){
+  const body=$("#tableBody");
+  let list=state.videos.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  // 텍스트 필터 (제목)
+  if(filterText){const q=filterText.toLowerCase();
+    list=list.filter(v=>(v.title||"").toLowerCase().includes(q));}
+  // 태그 필터 (AND - 모두 포함)
+  if(filterTags.size){
+    list=list.filter(v=>{
+      const t=videoAllTags(v).all;
+      return [...filterTags].every(f=>t.includes(f));
+    });
+  }
+  $("#countChip").textContent=list.length;
+
+  if(!state.videos.length){$("#emptyState").style.display="block";body.innerHTML="";return;}
+  $("#emptyState").style.display="none";
+
+  if(!list.length){
+    body.innerHTML=`<tr><td colspan="5" style="text-align:center;padding:34px;color:var(--ink-soft)">🔍 조건에 맞는 영상이 없어요</td></tr>`;
+    return;
+  }
+
+  body.innerHTML=list.map(v=>{
+    const t=videoAllTags(v);
+    const peopleChips=[...v.people.map(p=>{
+      const cls=isMember(p)?"t-member":isStaff(p)?"t-staff":isGuest(p)?"t-guest":"t-member";
+      const team=isGuest(p)?guestTeam(p):"";
+      return chip(p,cls,{team});
+    }),...t.combos.map(c=>chip(c,"t-combo",{locked:true}))].join("");
+    const gsChips=[...v.genres.map(g=>chip(g,"t-genre")),
+                   ...v.series.map(s=>chip(s,"t-series"))].join("")||`<span style="color:var(--ink-soft);font-size:12px">-</span>`;
+    const thumb=v.videoId?
+      `<a href="${esc(v.url)}" target="_blank" rel="noopener">
+         <img class="tb" src="${thumbUrl(v.videoId)}" alt="" loading="lazy">
+         <span class="play">▶</span></a>`:
+      `<a href="${esc(v.url)}" target="_blank" rel="noopener">🔗 링크</a>`;
+    return `<tr data-id="${v.id}">
+      <td class="col-date">${esc(v.date||"—")}</td>
+      <td class="thumb-cell">${thumb}
+        <div class="row-actions">
+          <button class="del" data-del="${v.id}">삭제</button>
+        </div>
+      </td>
+      <td class="col-title"><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.title||"(제목 없음)")}</a></td>
+      <td><div class="cell-tags">${peopleChips||'<span style="color:var(--ink-soft)">-</span>'}</div></td>
+      <td><div class="cell-tags">${gsChips}</div></td>
+    </tr>`;
+  }).join("");
+
+  // 셀 태그 클릭 -> 필터 추가
+  body.querySelectorAll(".cell-tags .tag").forEach(tag=>{
+    tag.style.cursor="pointer";
+    tag.addEventListener("click",()=>{
+      filterTags.add(tag.dataset.label);
+      renderFilterCloud();renderActiveFilters();renderTable();
+      window.scrollTo({top:0,behavior:"smooth"});
+    });
+  });
+  // 삭제
+  body.querySelectorAll("[data-del]").forEach(b=>{
+    b.addEventListener("click",()=>{
+      if(!confirm("이 영상을 삭제할까요?"))return;
+      state.videos=state.videos.filter(x=>x.id!==b.dataset.del);
+      renderTable();saveData();toast("삭제했어요");
+    });
+  });
+}
+
+/* =========================================================================
+   유튜브 메타 불러오기
+   ========================================================================= */
+async function fetchMeta(){
+  const url=$("#urlInput").value.trim();
+  const vid=extractVideoId(url);
+  if(!vid){toast("유튜브 링크를 확인해주세요 🥲");return;}
+
+  // 폼 열기 + 초기화
+  formSel={people:new Set(),genres:new Set(),series:new Set()};
+  $("#tagpickWrap").classList.add("show");
+  $("#metaTitle").value="";$("#metaDate").value="";
+  renderPickers();
+  $("#tagpickWrap").dataset.vid=vid;
+  $("#tagpickWrap").dataset.url=url;
+
+  if(YT_READY){
+    try{
+      const api=`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${vid}&key=${YOUTUBE_API_KEY}`;
+      const res=await fetch(api);const data=await res.json();
+      if(data.items&&data.items[0]){
+        const sn=data.items[0].snippet;
+        $("#metaTitle").value=sn.title||"";
+        $("#metaDate").value=(sn.publishedAt||"").slice(0,10);
+        toast("제목·날짜 불러왔어요! ✨");
+      }else{toast("영상 정보를 못 찾았어요. 직접 입력해주세요");}
+    }catch(err){toast("불러오기 실패 - 직접 입력해주세요");}
+  }else{
+    toast("썸네일 준비완료! 제목·날짜는 직접 입력해주세요");
+  }
+  $("#metaTitle").focus();
+}
+
+function saveVideo(){
+  const wrap=$("#tagpickWrap");
+  const vid=wrap.dataset.vid, url=wrap.dataset.url;
+  const title=$("#metaTitle").value.trim();
+  const date=$("#metaDate").value;
+  if(!title){toast("제목을 입력해주세요");$("#metaTitle").focus();return;}
+
+  state.videos.push({
+    id:"v"+Date.now()+Math.random().toString(36).slice(2,6),
+    url, videoId:vid, date, title,
+    people:[...formSel.people],
+    genres:[...formSel.genres],
+    series:[...formSel.series]
+  });
+  // 폼 닫기
+  wrap.classList.remove("show");
+  $("#urlInput").value="";
+  formSel={people:new Set(),genres:new Set(),series:new Set()};
+  renderTable();saveData();toast("저장 완료! ☁️💾");
+}
+
+/* =========================================================================
+   Firebase : 로그인 + 동기화
+   ========================================================================= */
+function renderAuth(){
+  const area=$("#authArea");
+  if(currentUser){
+    area.innerHTML=`
+      <div class="user-chip">
+        <img src="${currentUser.photoURL||''}" alt="" onerror="this.style.display='none'">
+        ${esc(currentUser.displayName||'사용자')}
+      </div>
+      <button class="pill-btn" id="logoutBtn">로그아웃</button>`;
+    $("#logoutBtn").addEventListener("click",()=>firebase.auth().signOut());
+  }else{
+    area.innerHTML=`<button class="pill-btn primary" id="loginBtn">🌸 구글 로그인</button>`;
+    $("#loginBtn").addEventListener("click",doLogin);
+  }
+}
+function doLogin(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(err=>{
+    toast("로그인 실패: "+err.code);
+  });
+}
+
+async function saveData(){
+  if(!userDocRef)return; // 미로그인/미설정 시 저장 스킵
+  try{
+    await userDocRef.set({
+      videos:state.videos, staff:state.staff, guests:state.guests,
+      genres:state.genres, series:state.series, updated:Date.now()
+    });
+  }catch(err){console.warn("save failed",err);}
+}
+async function loadData(){
+  if(!userDocRef)return;
+  try{
+    const doc=await userDocRef.get();
+    if(doc.exists){
+      const d=doc.data();
+      state.videos=d.videos||[];
+      state.staff =d.staff ||[...DEFAULT_STAFF];
+      state.guests=d.guests||DEFAULT_GUESTS.map(g=>({...g}));
+      state.genres=d.genres||[...DEFAULT_GENRES];
+      state.series=d.series||[...DEFAULT_SERIES];
+    }
+  }catch(err){console.warn("load failed",err);}
+}
+
+/* =========================================================================
+   부팅
+   ========================================================================= */
+function showSetupBanner(){
+  const b=$("#setupBanner");let html="";
+  if(!FB_READY){
+    html+=`<div class="banner warn">⚠️ <div><b>Firebase 설정이 아직이에요.</b> 코드 상단 <code>FIREBASE_CONFIG</code>에 값을 넣어야 구글 로그인·기기간 동기화가 작동해요. (지금은 로그인 없이 임시로 둘러볼 수 있게 열어둘게요)</div></div>`;
+  }
+  if(!YT_READY){
+    html+=`<div class="banner info">ℹ️ <div>YouTube API 키(<code>YOUTUBE_API_KEY</code>)를 넣으면 링크만 붙여도 제목·날짜가 자동으로 채워져요. 지금은 썸네일만 자동, 제목·날짜는 직접 입력하면 됩니다.</div></div>`;
+  }
+  b.innerHTML=html;
+}
+
+function enterApp(){
+  $("#gate").style.display="none";
+  $("#app").style.display="block";
+  renderPickers();renderFilterCloud();renderActiveFilters();renderTable();
+}
+
+function boot(){
+  initClouds();showSetupBanner();
+  wirePickerClicks();wireAddTagButtons();wireFilterClicks();
+
+  $("#fetchBtn").addEventListener("click",fetchMeta);
+  $("#urlInput").addEventListener("keydown",e=>{if(e.key==="Enter")fetchMeta();});
+  $("#saveBtn").addEventListener("click",saveVideo);
+  $("#cancelBtn").addEventListener("click",()=>{
+    $("#tagpickWrap").classList.remove("show");$("#urlInput").value="";});
+  $("#searchBox").addEventListener("input",e=>{filterText=e.target.value.trim();renderTable();});
+
+  if(FB_READY){
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.firestore();
+    firebase.auth().onAuthStateChanged(async user=>{
+      currentUser=user;renderAuth();
+      if(user){
+        userDocRef=db.collection("archives").doc(user.uid);
+        await loadData();enterApp();
+      }else{
+        userDocRef=null;
+        $("#app").style.display="none";$("#gate").style.display="block";
+      }
+    });
+    $("#gateLogin").addEventListener("click",doLogin);
+  }else{
+    // Firebase 미설정 : 로그인 없이 임시 둘러보기 모드
+    renderAuth();enterApp();
+  }
+}
+boot();
+</script>
+</body>
+</html>
