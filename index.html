@@ -190,6 +190,10 @@ tbody tr{background:#fff}
 tbody tr:nth-child(even){background:#f2fbff}
 tbody tr:hover{background:#e6f6ff}
 .col-date{white-space:nowrap;font-weight:700;color:var(--sky-deep);font-size:12.5px}
+.sort-th{cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:4px;
+  padding:2px 6px;border-radius:10px;transition:background .12s}
+.sort-th:hover{background:rgba(255,255,255,.25)}
+.sort-arrow{font-size:11px;transition:transform .15s;display:inline-block}
 .col-title{font-weight:700;max-width:280px}
 .col-title a{color:var(--ink);text-decoration:none}
 .col-title a:hover{text-decoration:underline;color:var(--sky-deep)}
@@ -393,7 +397,7 @@ footer{text-align:center;font-family:'Silkscreen';font-size:10px;color:var(--sky
         <table>
           <thead>
             <tr>
-              <th style="width:100px">날짜</th>
+              <th style="width:100px"><span class="sort-th" id="sortTh">날짜 <span class="sort-arrow" id="sortArrow">▼</span></span></th>
               <th style="width:140px">영상</th>
               <th>제목</th>
               <th style="width:180px">출연진</th>
@@ -694,6 +698,19 @@ function clearDateRange(){
 }
 
 /* === 표 렌더 === */
+// 정렬 상태를 드롭다운·헤더 화살표에 반영
+function syncSortUI(){
+  const sel=$("#sortSel"); if(sel) sel.value=sortMode;
+  const arrow=$("#sortArrow");
+  if(arrow){
+    // 최신순(new)=내림차순 ▼ , 오래된순(old)=오름차순 ▲
+    arrow.textContent = sortMode==="new" ? "▼" : "▲";
+  }
+}
+function toggleSort(){
+  sortMode = sortMode==="new" ? "old" : "new";
+  renderTable();
+}
 function videoAllTags(v){
   // 표시/검색용 전체 태그 = 사람 + 자동조합 + 장르 + 시리즈
   const combos=computeCombos(new Set(v.people));
@@ -702,6 +719,7 @@ function videoAllTags(v){
 }
 function renderTable(){
   const body=$("#tableBody");
+  syncSortUI();
   let list=state.videos.slice();
   // 정렬 (최신순/오래된순) - 날짜 없는 항목은 항상 뒤로
   list.sort((a,b)=>{
@@ -913,6 +931,7 @@ function boot(){
     $("#tagpickWrap").classList.remove("show");$("#urlInput").value="";});
   $("#searchBox").addEventListener("input",e=>{filterText=e.target.value.trim();renderTable();});
   $("#sortSel").addEventListener("change",e=>{sortMode=e.target.value;renderTable();});
+  $("#sortTh").addEventListener("click",toggleSort);
   $("#dateFrom").addEventListener("change",e=>{dateFrom=e.target.value;renderActiveFilters();renderTable();});
   $("#dateTo").addEventListener("change",e=>{dateTo=e.target.value;renderActiveFilters();renderTable();});
   $("#dateClear").addEventListener("click",clearDateRange);
