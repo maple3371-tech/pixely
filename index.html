@@ -155,6 +155,9 @@ input:focus,select:focus{border-color:var(--sky-4);box-shadow:0 0 0 3px rgba(124
 
 /* ===== 검색/필터 ===== */
 .searchrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.daterow{align-items:flex-end;background:#f4fbff;border:2px dashed var(--sky-3);
+  border-radius:14px;padding:10px 12px}
+.date-tilde{font-family:'Jua';font-size:18px;color:var(--sky-4);padding-bottom:6px}
 .search-input{flex:1;min-width:220px;position:relative}
 .search-input input{width:100%;padding-left:34px}
 .search-input::before{content:"🔍";position:absolute;left:11px;top:50%;
@@ -360,6 +363,25 @@ footer{text-align:center;font-family:'Silkscreen';font-size:10px;color:var(--sky
         </div>
         <span class="filter-note">태그를 누르면 필터, 여러 개 누르면 모두 포함한 영상만 보여요</span>
       </div>
+      <div class="searchrow daterow">
+        <div class="field">
+          <label for="sortSel">정렬</label>
+          <select id="sortSel">
+            <option value="new">최신순 ↓</option>
+            <option value="old">오래된순 ↑</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="dateFrom">시작 날짜</label>
+          <input type="date" id="dateFrom">
+        </div>
+        <span class="date-tilde">~</span>
+        <div class="field">
+          <label for="dateTo">끝 날짜</label>
+          <input type="date" id="dateTo">
+        </div>
+        <button class="mini-btn" id="dateClear" style="margin-bottom:1px">기간 지우기</button>
+      </div>
       <div class="active-filters" id="activeFilters"></div>
       <div class="filter-cloud" id="filterCloud"></div>
     </section>
@@ -444,7 +466,7 @@ const DEFAULT_GUESTS  = [
 // 2인 조합 규칙 : name -> [멤버A, 멤버B]
 const COMBO_RULES = {
   "라떡":["라더","덕개"], "괴짜":["라더","각별"], "이빨":["라더","공룡"],
-  "바":["라더","잠뜰"],   "황혼":["라더","수현"], "맏막":["덕개","각별"],
+  "바다":["라더","잠뜰"], "황혼":["라더","수현"], "맏막":["덕개","각별"],
   "부산":["덕개","공룡"], "저노":["덕개","잠뜰"], "무해":["덕개","수현"],
   "공각":["각별","공룡"], "이과":["각별","잠뜰"], "원혐":["각별","수현"],
   "주작":["공룡","잠뜰"], "오로라":["공룡","수현"],"잠컴":["잠뜰","수현"]
@@ -474,6 +496,9 @@ let formSel = { people:new Set(), genres:new Set(), series:new Set() };
 // 검색 필터
 let filterTags = new Set();
 let filterText = "";
+let sortMode = "new";      // "new" 최신순 | "old" 오래된순
+let dateFrom = "";         // YYYY-MM-DD
+let dateTo   = "";
 
 /* ---------- 유틸 ---------- */
 const $ = s=>document.querySelector(s);
@@ -646,14 +671,26 @@ function wireFilterClicks(){
 }
 function renderActiveFilters(){
   const box=$("#activeFilters");
-  if(!filterTags.size&&!filterText){box.innerHTML="";return;}
+  const hasDate = dateFrom || dateTo;
+  if(!filterTags.size&&!filterText&&!hasDate){box.innerHTML="";return;}
   const chips=[...filterTags].map(l=>`<span class="tag t-combo sel" data-label="${esc(l)}">${esc(l)} <span class="x">✕</span></span>`).join("");
-  box.innerHTML = chips + (filterTags.size?`<button class="clear-filters" id="clearF">필터 모두 지우기</button>`:"");
-  box.querySelectorAll(".tag").forEach(t=>t.addEventListener("click",()=>{
+  let dateChip="";
+  if(hasDate){
+    const label=`📅 ${dateFrom||"처음"} ~ ${dateTo||"지금"}`;
+    dateChip=`<span class="tag t-genre sel" id="dateChip">${esc(label)} <span class="x">✕</span></span>`;
+  }
+  box.innerHTML = chips + dateChip + (filterTags.size?`<button class="clear-filters" id="clearF">필터 모두 지우기</button>`:"");
+  box.querySelectorAll(".tag[data-label]").forEach(t=>t.addEventListener("click",()=>{
     filterTags.delete(t.dataset.label);renderFilterCloud();renderActiveFilters();renderTable();
   }));
+  const dc=$("#dateChip");if(dc)dc.addEventListener("click",clearDateRange);
   const cf=$("#clearF");if(cf)cf.addEventListener("click",()=>{
     filterTags.clear();renderFilterCloud();renderActiveFilters();renderTable();});
+}
+function clearDateRange(){
+  dateFrom="";dateTo="";
+  $("#dateFrom").value="";$("#dateTo").value="";
+  renderActiveFilters();renderTable();
 }
 
 /* === 표 렌더 === */
@@ -665,10 +702,20 @@ function videoAllTags(v){
 }
 function renderTable(){
   const body=$("#tableBody");
-  let list=state.videos.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  let list=state.videos.slice();
+  // 정렬 (최신순/오래된순) - 날짜 없는 항목은 항상 뒤로
+  list.sort((a,b)=>{
+    const da=a.date||"", db=b.date||"";
+    if(!da&&!db)return 0;
+    if(!da)return 1; if(!db)return -1;
+    return sortMode==="new" ? db.localeCompare(da) : da.localeCompare(db);
+  });
   // 텍스트 필터 (제목)
   if(filterText){const q=filterText.toLowerCase();
     list=list.filter(v=>(v.title||"").toLowerCase().includes(q));}
+  // 기간 필터 (시작~끝, 한쪽만 지정해도 동작)
+  if(dateFrom) list=list.filter(v=>v.date && v.date>=dateFrom);
+  if(dateTo)   list=list.filter(v=>v.date && v.date<=dateTo);
   // 태그 필터 (AND - 모두 포함)
   if(filterTags.size){
     list=list.filter(v=>{
@@ -865,6 +912,10 @@ function boot(){
   $("#cancelBtn").addEventListener("click",()=>{
     $("#tagpickWrap").classList.remove("show");$("#urlInput").value="";});
   $("#searchBox").addEventListener("input",e=>{filterText=e.target.value.trim();renderTable();});
+  $("#sortSel").addEventListener("change",e=>{sortMode=e.target.value;renderTable();});
+  $("#dateFrom").addEventListener("change",e=>{dateFrom=e.target.value;renderActiveFilters();renderTable();});
+  $("#dateTo").addEventListener("change",e=>{dateTo=e.target.value;renderActiveFilters();renderTable();});
+  $("#dateClear").addEventListener("click",clearDateRange);
 
   if(FB_READY){
     firebase.initializeApp(FIREBASE_CONFIG);
